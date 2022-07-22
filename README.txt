@@ -9,7 +9,7 @@
         cd Hudl_Repo
         pip install -r .\requirements.txt
 
-3) Enter password into password.txt file
+3) Open project in IDE and enter password into password.txt file
     - Password will be a base64.b64encoded value (will be provided to you)
 
 4) Run log in test
