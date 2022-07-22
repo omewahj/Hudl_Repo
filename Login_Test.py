@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 import base64
 import time
 
@@ -18,24 +18,31 @@ def hudl_login():
 
     driver.maximize_window()
 
-    driver.get("https://www.hudl.com/")
-
-    time.sleep(2)
-
     # Assert that driver is on title page
-    assert "We Help Teams and Athletes Win" in driver.title
+    try:
+        driver.get("https://www.hudl.com/")
+        time.sleep(2)
+        assert "We Help Teams and Athletes Win" in driver.title
+        print("Home page loaded")
+    except (AssertionError, WebDriverException):
+        print("ERROR: Unable to reach home page")
+        return
 
-    # wait until Login in button is clickable and then click
-    log_in_buttons = wait.until(EC.element_to_be_clickable(
-        (By.CSS_SELECTOR, "body > div.outer > header > div > a.mainnav__btn.mainnav__btn--primary")))
-    log_in_buttons.click()
-
-    time.sleep(2)
-
-    assert "Log In" in driver.title
+    try:
+        # wait until Login in button is clickable and then click
+        log_in_buttons = wait.until(EC.element_to_be_clickable(
+            (By.CSS_SELECTOR, "body > div.outer > header > div > a.mainnav__btn.mainnav__btn--primary")))
+        log_in_buttons.click()
+        time.sleep(2)
+        assert "Log In" in driver.title
+        print('Home page log in button clicked successfully')
+    except (AssertionError, TimeoutException):
+        print('ERROR: Home page log in button un-clickable')
+        return
 
     # wait until email input box is visible and enter username and encrypted password
     username_field = wait.until(EC.visibility_of_element_located((By.ID, "email")))
+
 
     username_field.send_keys(EMAIL_ID)
 
@@ -51,15 +58,21 @@ def hudl_login():
 
     time.sleep(2)
 
-    assert "Home - Hudl" in driver.title
-
     # Validate element found after logging in
     try:
+        assert "Home - Hudl" in driver.title
         wait.until(
             EC.visibility_of_element_located((By.XPATH, "//*[@id='ssr-webnav']/div/div[1]/nav[1]/div[4]/div[2]")))
         print('Successful Login Test')
-    except TimeoutException:
-        print('Unable to log in')
+    except (TimeoutException, AssertionError):
+        print('ERROR: Unable to log in')
+        try:
+            # Check for invalid credentials
+            wait.until(
+                EC.visibility_of_element_located((By.XPATH, "//*[@id='app']/section/div[2]/div/form/div/div[3]")))
+            print('ERROR: Invalid Credentials Error')
+        except TimeoutException:
+            return
 
     driver.quit()
 
