@@ -6,7 +6,7 @@
 
 2) CD in project and install dependencies from requirement.txt
     - run in terminal:
-        cd Hudl_Repo.git
+        cd Hudl_Repo
         pip install -r .\requirements.txt
 
 3) Enter password into password.txt file
